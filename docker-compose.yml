@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  gaussianformer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gaussianformer:inference
+    container_name: gaussianformer_dev
+    ports:
+      - "2222:22"  # SSH port
+    # GPU configuration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Volumes for data, models, and output persistence
+    volumes:
+      - ./data:/app/GaussianFormer/data
+      - ./models:/app/GaussianFormer/out
+      - ~/.ssh/authorized_keys:/root/.ssh/authorized_keys:ro  # For SSH key-based auth
+    # Environment variables
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    restart: unless-stopped 
